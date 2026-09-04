@@ -1,7 +1,6 @@
 import os
 from flask import Flask, render_template, request, flash, redirect, url_for
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image
 from flask_bootstrap import Bootstrap5
 import io, base64
