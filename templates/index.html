@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Image Color Basket{% endblock %}</title>
+
+    <!-- Colorful Basket Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><defs><linearGradient id='basketGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ff4b1f'/><stop offset='50%25' stop-color='%23ff9068'/><stop offset='100%25' stop-color='%231fddff'/></linearGradient></defs><path fill='url(%23basketGrad)' d='M5.929 1.757a.5.5 0 1 0-.858-.514L2.217 6H.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h.623l1.844 6.456A.75.75 0 0 0 3.69 15h8.622a.75.75 0 0 0 .722-.544L14.877 8h.623a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1.717L10.93 1.243a.5.5 0 1 0-.858.514L12.617 6H3.383zM4 10a1 1 0 0 1 2 0v2a1 1 0 1 1-2 0zm3 0a1 1 0 0 1 2 0v2a1 1 0 1 1-2 0zm4-1a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1'/></svg>">
+
+    {% block styles %}
+        {{ bootstrap.load_css() }}
+        <style>
+            body {
+                background-color: #f8f9fa; /* off-white background */
+            }
+            .color-box {
+                width: 36px;
+                height: 36px;
+                border-radius: 6px;
+                border: 1px solid rgba(0, 0, 0, 0.15);
+            }
+        </style>
+    {% endblock %}
+</head>
+<body>
+    <main class="container py-5" style="max-width: 800px;">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category in ['error', 'danger'] else category }} alert-dismissible fade show mb-4 shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Header with Inline Palette SVG Logo -->
+        <header class="text-center mb-4">
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-dark">
+                    <circle cx="13.5" cy="6.5" r=".5" fill="#e63946" stroke="#e63946"/>
+                    <circle cx="17.5" cy="10.5" r=".5" fill="#f4a261" stroke="#f4a261"/>
+                    <circle cx="8.5" cy="7.5" r=".5" fill="#2a9d8f" stroke="#2a9d8f"/>
+                    <circle cx="6.5" cy="12.5" r=".5" fill="#457b9d" stroke="#457b9d"/>
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/>
+                </svg>
+                <h1 class="fw-bold mb-0">Image Color Extract</h1>
+            </div>
+            <p class="text-secondary">Upload your image to extract its dominant color palette</p>
+        </header>
+
+        <!-- Upload Form -->
+        <div class="card shadow-sm border-0 mb-5">
+            <div class="card-body p-4">
+                <form action="{{ url_for('extract') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="image" class="form-label fw-semibold">Select Image</label>
+                        <input class="form-control" type="file" id="image" name="image" accept="image/*" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="num_colors" class="form-label fw-semibold">Number of Colors</label>
+                        <input type="number" class="form-control" id="num_colors" name="num_colors" min="1" max="10" value="5" required>
+                        <div class="form-text">Choose between 1 and 10 colors.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">Extract Colors</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Conditional Results View (Post-Processing) -->
+        {% if processed %}
+        <section class="card shadow-sm border-0 p-4">
+            <h2 class="h4 fw-bold mb-4">Extracted Palette</h2>
+            <div class="row g-4 align-items-center">
+
+                <!-- Uploaded Image Preview -->
+                <div class="col-md-5 text-center">
+                    <img src="data:image/jpeg;base64,{{ image_b64 }}" alt="Uploaded Image Preview" class="img-fluid rounded border shadow-sm" style="max-height: 280px; object-fit: contain;">
+                </div>
+
+                <!-- Extracted Color List -->
+                <!-- Extracted Color List -->
+<div class="col-md-7">
+    <div class="accordion" id="paletteAccordion">
+        {% for color in colors %}
+        <div class="border-bottom py-2">
+            <!-- Main Row -->
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="color-box shadow-sm" style="background-color: {{ color.primary_hex }};"></div>
+                    <div>
+                        <span class="fw-bold text-capitalize">{{ color.name }}</span>
+                        {% if color.variations|length > 1 %}
+                            <small class="text-muted">({{ color.variations|length }} shades)</small>
+                        {% else %}
+                            <small class="text-muted font-monospace d-block">{{ color.variations[0].hex }} | {{ color.variations[0].rgb }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary rounded-pill font-monospace">{{ color.total_percentage }}%</span>
+
+                    <!-- Dropdown button only if there are multiple appearances -->
+                    {% if color.variations|length > 1 %}
+                    <button class="btn btn-sm btn-link text-decoration-none text-dark p-0"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse-{{ loop.index }}"
+                            aria-expanded="false"
+                            aria-controls="collapse-{{ loop.index }}">
+                        ▼
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dropdown Body showing individual variations -->
+            {% if color.variations|length > 1 %}
+            <div class="collapse mt-2 ps-4" id="collapse-{{ loop.index }}" data-bs-parent="#paletteAccordion">
+                <ul class="list-group list-group-flush border-start border-2 ps-2">
+                    {% for variant in color.variations %}
+                    <li class="list-group-item bg-transparent d-flex align-items-center justify-content-between py-1 px-0 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="color-box shadow-sm" style="width: 22px; height: 22px; background-color: {{ variant.hex }};"></div>
+                            <small class="font-monospace text-muted">{{ variant.hex }} | {{ variant.rgb }}</small>
+                        </div>
+                        <span class="badge bg-light text-dark border font-monospace">{{ variant.percentage }}%</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    {% block scripts %}
+        {{ bootstrap.load_js() }}
+    {% endblock %}
+</body>
+</html>
